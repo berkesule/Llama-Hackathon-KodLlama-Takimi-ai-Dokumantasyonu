@@ -443,6 +443,7 @@ python json_converter.py
 Llama 3.1 8B modelini LoRA ile Jira task üretimi için fine-tune eden eğitim scripti.
 
 ---
+Model: Berkesule/kodllama_sft_cosmosllama_merged
 
 ## 🎯 Ne Yapar?
 
