@@ -417,17 +417,6 @@ python json_converter.py
 
 ---
 
-## 📈 Performans
-
-| Aşama | Süre | Throughput |
-|-------|------|------------|
-| Ekip Üretimi | ~1-2 sn/ekip | ~200 ekip/saat |
-| Görev Planlama | ~3-5 sn/plan | ~120 plan/saat |
-| JSON Dönüştürme | ~2-4 sn/chunk | ~300 task/saat |
-
-**Örnek**: 100 proje × 4 ekip = 400 eğitim örneği → **~5 saat**
-
----
 
 ## 📁 Dosyalar
 ```
@@ -446,12 +435,5 @@ python json_converter.py
 **Kaggle Dataset**: [Project Planning Data](https://www.kaggle.com/datasets/projectplanning)  
 **Kullanılan Sütun**: `Project_plan`
 
----
-
-## 📄 Lisans
-
-MIT License
-
----
 
 **Not**: Türkçe LLM'ler için optimize edilmiştir (YTÜ CE Cosmos modelleri).
