@@ -437,3 +437,101 @@ python json_converter.py
 
 
 **Not**: Türkçe LLM'ler için optimize edilmiştir (YTÜ CE Cosmos modelleri).
+
+# LLM Fine-tuning Script
+
+Llama 3.1 8B modelini LoRA ile Jira task üretimi için fine-tune eden eğitim scripti.
+
+---
+
+## 🎯 Ne Yapar?
+
+Sentetik eğitim verisini kullanarak Llama 3.1 8B modelini:
+- Markdown → Jira JSON dönüşümü için optimize eder
+- Özellikle JSON formatlı çıktı alırken modelin max_token_lenght değerinin sonuna kadar anlamsız üretim yapmasının önüne geçmek amaçlanmıştır.
+
+---
+
+## 📦 Kurulum
+```bash
+pip install torch transformers datasets peft bitsandbytes huggingface_hub
+```
+
+---
+
+## 🚀 Kullanım
+```python
+# 1. Token ayarla
+HF_TOKEN = "hf_..."
+
+# 2. Veri yolunu belirt
+JSON_DATA_PATH = "traindata.json"
+
+# 3. Eğitimi başlat
+python train.py
+```
+
+---
+
+## ⚙️ Konfigürasyon
+```python
+class Config:
+    # Model
+    MODEL_NAME = "ytu-ce-cosmos/Turkish-Llama-8b-Instruct-v0.1"
+    
+    # LoRA
+    LORA_R = 4
+    LORA_ALPHA = 8
+    LORA_DROPOUT = 0.05
+    
+    # Eğitim
+    NUM_TRAIN_EPOCHS = 3
+    BATCH_SIZE = 8
+    LEARNING_RATE = 2e-4
+    MAX_LENGTH = 6400
+    
+    # Hub
+    HF_REPO_NAME = "username/model-name"
+    PUSH_TO_HUB = True
+```
+
+---
+
+## 📊 Özellikler
+
+✅ **LoRA Fine-tuning** - Az GPU bellek kullanımı  
+✅ **Dynamic Padding** - Farklı uzunlukta input'lar için optimize  
+✅ **Auto Hub Push** - Her checkpoint'te Hugging Face'e yükleme  
+✅ **BF16 Training** - A100/V100 için optimize  
+✅ **Gradient Accumulation** - Effective batch size artırımı
+
+---
+
+## 🎓 Veri Formatı
+
+**Girdi**: `traindata.json` (json_converter.py çıktısı)
+```json
+[
+  {
+    "input": "## Epic 1: Backend\n### Task1: API...",
+    "output": {"tasks": [...]}
+  }
+]
+```
+
+**Prompt Format**: Llama 3.1 Instruct template
+```
+<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+
+{SYSTEM_PROMPT}<|eot_id|><|start_header_id|>user<|end_header_id|>
+
+{input}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
+{output}<|eot_id|>
+```
+
+
+
+## 📄 Lisans
+
+MIT License
