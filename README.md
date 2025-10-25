@@ -1,6 +1,6 @@
 # LLM-Powered Project Planner
 
-AI destekli proje yönetimi sistemi - Türkçe proje dokümanlarından otomatik Jira task'ları üretir.
+AI destekli proje yönetimi sistemi - Türkçe proje dokümanlarından otomatik JSON formatında task'ları üretir.
 
 ---
 
@@ -30,7 +30,7 @@ AI destekli proje yönetimi sistemi - Türkçe proje dokümanlarından otomatik 
 - ✅ **Akıllı Task Atama**: Ekip üyelerinin yeteneklerine göre görev dağıtır
 - ✅ **Türkçe Destek**: Tarih, öncelik, süre gibi Türkçe ifadeleri otomatik çevirir
 - ✅ **Chunking**: 7+ task için otomatik gruplama (GPU bellek yönetimi)
-- ✅ **Jira API Uyumlu**: Direkt Jira'ya gönderilebilir JSON formatı
+- ✅ **Jira API Uyumlu**: Neredeyse Jira'ya gönderilebilir JSON formatı
 - ✅ **Ngrok Entegrasyonu**: Cloud ortamdan erişim için public URL
 
 ---
