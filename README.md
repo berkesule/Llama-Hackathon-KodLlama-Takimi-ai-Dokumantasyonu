@@ -285,3 +285,173 @@ payload = {
 ```
 
 **Sonuç**: 4+ gruba bölünür, ~20 saniye
+
+# Synthetic Training Data Generation Pipeline
+
+AI destekli proje yönetimi için sentetik eğitim verisi üretimi - 3 aşamalı pipeline sistemi.
+
+---
+
+## 🎯 Ne Yapar?
+
+Kaggle'dan alınan proje planlarını (`Project Planning Data`) kullanarak, her proje için:
+1. Farklı ekip kombinasyonları oluşturur
+2. Her ekip için görev planları üretir  
+3. Jira formatında eğitim verisi çıkarır
+
+**Çıktı**: `input` (markdown) + `output` (Jira JSON) eğitim dataset'i
+
+---
+
+## 📦 Kurulum
+```bash
+pip install torch vllm pandas tqdm
+```
+
+**GPU Gereksinimi**: 16GB+ (CUDA 11.8+)
+
+---
+
+## 🔄 3 Aşamalı Pipeline
+
+### 1️⃣ Ekip Üretimi (`team_generator.py`)
+**Model**: Turkish-Llama-8b-DPO  
+**Girdi**: Kaggle CSV (Project Planning Data)  
+**Çıktı**: Her proje için 4 farklı ekip kombinasyonu
+```python
+csv_proje_ekip_pipeline(
+    csv_path="project_plans.csv",
+    output_json="proje_ekip.json",
+    num_teams=4,     # Her proje için 4 ekip
+    batch_size=8     # GPU optimizasyonu
+)
+```
+
+---
+
+### 2️⃣ Görev Planlama (`task_planner.py`)
+**Model**: Turkish-Llama-8b-DPO  
+**Girdi**: Ekip listesi (Aşama 1)  
+**Çıktı**: Her ekip için Epic/Task planı (Markdown)
+```python
+python task_planner.py
+# Otomatik: proje_ekip.json → firstPhaseData.json
+```
+
+---
+
+### 3️⃣ JSON Dönüştürme (`json_converter.py`)
+**Model**: Turkish-Llama-8b-Instruct  
+**Girdi**: Görev planları (Aşama 2)  
+**Çıktı**: Input-output pair eğitim verisi
+```python
+process_json_file(
+    input_file="firstPhaseData.json",
+    output_file="traindata.json",
+    batch_size=16,
+    max_tasks_per_chunk=14
+)
+```
+
+---
+
+## 📊 Veri Formatı
+
+### Girdi (Kaggle CSV)
+```csv
+Project_plan
+"E-commerce platform with user management, product catalog..."
+"AI chatbot with NLP and sentiment analysis..."
+```
+
+### Çıktı (Eğitim Verisi)
+```json
+[
+  {
+    "proje_id": "proje_1",
+    "ekip_id": "ekip_1",
+    "input": "## Epic 1: User Management\n### Task1: Login API\nDescription: JWT-based...\nAssignee: John (E3)\nPriority: High\n...",
+    "output": {
+      "tasks": [
+        {
+          "epic_name": "User Management",
+          "fields": {
+            "summary": "Login API Development",
+            "assignee": {"name": "John", "accountId": "E3"},
+            "priority": {"name": "High"},
+            "duedate": "2025-11-15",
+            "timetracking": {"originalEstimate": "3d"}
+          }
+        }
+      ]
+    }
+  }
+]
+```
+
+---
+
+## 🚀 Hızlı Başlangıç
+```bash
+# 1. Ekip üret
+python team_generator.py
+
+# 2. Görev planla
+python task_planner.py
+
+# 3. JSON'a dönüştür
+python json_converter.py
+
+# ✅ Sonuç: traindata_YYYYMMDD_HHMMSS.json
+```
+
+---
+
+## 🔧 Özellikler
+
+✅ **Batch Processing** - GPU optimizasyonu ile hızlı işlem  
+✅ **Chunking** - 14+ task otomatik bölme  
+✅ **Smart Parsing** - Türkçe tarih/süre/öncelik çevirisi  
+✅ **Auto Formatting** - Jira API uyumlu JSON  
+✅ **Error Handling** - Post-processing ile düzeltme
+
+---
+
+## 📈 Performans
+
+| Aşama | Süre | Throughput |
+|-------|------|------------|
+| Ekip Üretimi | ~1-2 sn/ekip | ~200 ekip/saat |
+| Görev Planlama | ~3-5 sn/plan | ~120 plan/saat |
+| JSON Dönüştürme | ~2-4 sn/chunk | ~300 task/saat |
+
+**Örnek**: 100 proje × 4 ekip = 400 eğitim örneği → **~5 saat**
+
+---
+
+## 📁 Dosyalar
+```
+├── team_generator.py       # Aşama 1
+├── task_planner.py         # Aşama 2
+├── json_converter.py       # Aşama 3
+└── data/
+    ├── project_plans.csv   # Kaggle: Project Planning Data
+    └── traindata.json      # Final eğitim verisi
+```
+
+---
+
+## 🎓 Veri Kaynağı
+
+**Kaggle Dataset**: [Project Planning Data](https://www.kaggle.com/datasets/projectplanning)  
+**Kullanılan Sütun**: `Project_plan`
+
+---
+
+## 📄 Lisans
+
+MIT License
+
+---
+
+**Not**: Türkçe LLM'ler için optimize edilmiştir (YTÜ CE Cosmos modelleri).
